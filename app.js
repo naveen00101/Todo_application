@@ -5,6 +5,7 @@ const path = require("path");
 const format = require("date-fns/format");
 const isMatch = require("date-fns/isMatch");
 const isValid = require("date-fns/isValid");
+const toDate = require("date-fns/toDate");
 
 const app = express();
 app.use(express.json());
@@ -24,7 +25,7 @@ const convertCase = (obj) => {
 };
 
 const checkRequestQueries = (request, response, next) => {
-  const {
+  let {
     id,
     todo,
     status,
@@ -33,6 +34,12 @@ const checkRequestQueries = (request, response, next) => {
     category,
     dueDate,
   } = request.body;
+
+  if (Object.keys(request.query).length !== 0) {
+    const { status, priority, category, date } = request.query;
+    dueDate = date;
+  }
+
   let e = false;
   if (status !== undefined) {
     let a = ["TO DO", "IN PROGRESS", "DONE"];
@@ -43,6 +50,7 @@ const checkRequestQueries = (request, response, next) => {
       e = true;
       response.status(400);
       response.send("Invalid Todo Status");
+      return;
     }
   }
   if (priority !== undefined) {
@@ -54,6 +62,7 @@ const checkRequestQueries = (request, response, next) => {
       e = true;
       response.status(400);
       response.send("Invalid Todo Priority");
+      return;
     }
   }
   if (category !== undefined) {
@@ -65,15 +74,18 @@ const checkRequestQueries = (request, response, next) => {
       e = true;
       response.status(400);
       response.send("Invalid Todo Category");
+      return;
     }
   }
   if (dueDate !== undefined) {
     try {
       const myDate = new Date(dueDate);
       const formattedDate = format(new Date(dueDate), "yyyy-MM-dd");
-      console.log(formattedDate);
+
       const result = toDate(new Date(formattedDate));
+
       const isValidDate = isValid(result);
+
       console.log(isValidDate);
       if (isValidDate) {
         request.dueDate = formattedDate;
@@ -81,10 +93,12 @@ const checkRequestQueries = (request, response, next) => {
         e = true;
         response.status(400);
         response.send("Invalid Due Date");
+        return;
       }
     } catch (error) {
       response.status(400);
       response.send("Invalid Due Date");
+      return;
     }
   }
 
@@ -111,6 +125,7 @@ const queryBuild = (request, response, next) => {
       e = true;
       response.status(400);
       response.send("Invalid Todo Status");
+      return;
     }
   }
 
@@ -127,6 +142,7 @@ const queryBuild = (request, response, next) => {
       e = true;
       response.status(400);
       response.send("Invalid Todo Priority");
+      return;
     }
   }
 
@@ -152,6 +168,7 @@ const queryBuild = (request, response, next) => {
       e = true;
       response.status(400);
       response.send("Invalid Todo Category");
+      return;
     }
   }
   if (!e) {
@@ -191,13 +208,15 @@ app.get("/todos/:todoId/", async (request, response) => {
 
 app.get("/agenda/", checkRequestQueries, async (request, response) => {
   const { date } = request.query;
-  const query = ` SELECT * FROM todo WHERE due_date = '${date}';`;
+  const dateFormat = format(new Date(date), "yyyy-MM-dd");
+  const query = ` SELECT * FROM todo WHERE due_date = '${dateFormat}';`;
 
   const result = await db.all(query);
 
   if (result === undefined) {
     response.status(400);
     response.send("Invalid Due Date");
+    return;
   } else {
     response.send(result.map((item) => convertCase(item)));
   }

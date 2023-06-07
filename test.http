@@ -4,16 +4,16 @@ GET http://localhost:3000/todos/?search_q=Buy
 GET http://localhost:3000/todos/1
 ###
 
-GET http://localhost:3000/agenda/?date=2021-02-22
+GET http://localhost:3000/agenda/?date=2021-22
 ###
 
 POST http://localhost:3000/todos/
 Content-Type: application/json
 
 {
-  "id": 7,
+  "id": 8,
   "todo": "FUN HOUSE PARTY",
-  "priority": "LOW",
+  "priority": "SUPER",
   "status": "TO DO",
   "category": "HOME",
   "dueDate": "2021-03-22"
