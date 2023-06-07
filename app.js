@@ -230,7 +230,7 @@ app.post("/todos/", checkRequestQueries, async (request, response) => {
   response.send("Todo Successfully Added");
 });
 
-app.get("/todos/:todoId", checkRequestQueries, async (request, response) => {
+app.put("/todos/:todoId", checkRequestQueries, async (request, response) => {
   const { todoId } = request.params;
   const { status, priority, todo, category, dueDate } = request.body;
 
